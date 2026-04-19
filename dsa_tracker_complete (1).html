@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Pattern Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #080c10;
+  --surface: #0c1018;
+  --card: #0f1520;
+  --border: #161f2c;
+  --border2: #1e2d3e;
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --accent-dim: #1e3a5f;
+  --text: #c8d8e8;
+  --text2: #6a8aaa;
+  --text3: #3a5a7a;
+  --done: #1a3a5a;
+  --easy: #166534;
+  --easy-t: #4ade80;
+  --med: #854d0e;
+  --med-t: #fbbf24;
+  --hard: #7f1d1d;
+  --hard-t: #f87171;
+  --bonus-border: #2a1d08;
+  --bonus-bg: #0d0a04;
+  --bonus-accent: #d97706;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 28px 16px 80px;
+}
+
+.wrap { max-width: 820px; margin: 0 auto; }
+
+/* HEADER */
+.header { margin-bottom: 24px; }
+.logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: #e8f0f8; letter-spacing: -0.02em; margin-bottom: 2px; }
+.logo span { color: var(--accent); }
+.tagline { font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px; }
+
+/* PROGRESS */
+.progress-block { margin-bottom: 20px; }
+.progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-label { font-size: 11px; color: var(--text3); }
+.progress-count { font-size: 11px; color: var(--accent2); font-weight: 500; }
+.pbar-outer { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.pbar-inner { height: 100%; background: linear-gradient(90deg, var(--accent), #818cf8); border-radius: 2px; transition: width 0.4s ease; }
+
+/* TABS */
+.tab-section { margin-bottom: 6px; }
+.tab-label { font-size: 9px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+.tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.tab {
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  padding: 5px 12px; border-radius: 4px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text3); cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.tab:hover { border-color: var(--accent-dim); color: var(--accent2); }
+.tab.on { background: var(--accent-dim); color: var(--accent2); border-color: var(--accent); }
+.tab.bonus { border-color: var(--bonus-border); color: #5a4020; }
+.tab.bonus:hover { border-color: #5a3a10; color: var(--bonus-accent); }
+.tab.bonus.on { background: #1a0f04; color: var(--bonus-accent); border-color: #7a5020; }
+
+.divider { font-size: 9px; color: #3a2a10; letter-spacing: 0.12em; text-transform: uppercase; margin: 12px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #1a1208; }
+
+/* PATTERN CARD */
+.pcard { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; overflow: hidden; background: var(--card); transition: border-color 0.15s; }
+.pcard:hover { border-color: var(--border2); }
+.pcard.bonus-card { border-color: var(--bonus-border); background: var(--bonus-bg); }
+
+.pc-head { padding: 12px 14px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; user-select: none; }
+.pc-head:hover { background: #111820; }
+.bonus-card .pc-head:hover { background: #100c04; }
+
+.ph-num { font-size: 10px; color: var(--text3); min-width: 22px; padding-top: 2px; flex-shrink: 0; font-weight: 500; }
+
+.ph-body { flex: 1; min-width: 0; }
+.ph-name { font-size: 12px; font-weight: 600; color: #d8e8f8; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; font-family: 'Syne', sans-serif; }
+.bonus-label { font-size: 8px; padding: 1px 5px; border-radius: 3px; background: #1a0f04; color: #8a6030; border: 1px solid #3a2010; letter-spacing: 0.06em; font-weight: 400; font-family: 'JetBrains Mono', monospace; }
+
+.ph-idea { font-size: 10px; color: var(--text3); line-height: 1.6; margin-bottom: 4px; }
+
+/* VARIANT TAGS */
+.ph-variants { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.vtag { font-size: 9px; padding: 2px 7px; border-radius: 3px; background: #0d1825; color: var(--text3); border: 1px solid var(--border); letter-spacing: 0.03em; }
+.vtag.key { background: #0a1e35; color: #5090c0; border-color: #1a3a5a; }
+
+.ph-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-top: 2px; }
+.ph-prog { font-size: 10px; color: var(--text3); }
+.chev { font-size: 9px; color: var(--text3); transition: transform 0.2s; display: inline-block; }
+.chev.open { transform: rotate(180deg); }
+
+/* QUESTION LIST */
+.qlist { border-top: 1px solid var(--border); display: none; }
+.qlist.open { display: block; }
+
+/* PATTERN NOTE */
+.pattern-note {
+  padding: 10px 14px 10px 48px;
+  background: #090e16;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.7;
+}
+.bonus-card .pattern-note { background: #080603; }
+.note-head { font-size: 9px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.6; }
+.note-rule { margin-bottom: 3px; }
+.note-rule b { color: #5080a0; font-weight: 500; }
+.note-when { margin-top: 6px; font-size: 9px; }
+.note-when b { color: #507050; }
+
+.qrow { display: flex; align-items: center; gap: 10px; padding: 7px 14px 7px 48px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.qrow:last-child { border-bottom: none; }
+.qrow:hover { background: #0d1520; }
+.bonus-card .qrow:hover { background: #0c0904; }
+.qrow.done { opacity: 0.35; }
+
+.qcheck { width: 12px; height: 12px; border: 1.5px solid var(--border2); border-radius: 3px; flex-shrink: 0; position: relative; transition: all 0.15s; }
+.qrow.done .qcheck { background: var(--accent); border-color: var(--accent); }
+.qrow.done .qcheck::after { content: ''; position: absolute; top: 1px; left: 3px; width: 3px; height: 6px; border-right: 2px solid #080c10; border-bottom: 2px solid #080c10; transform: rotate(45deg); }
+
+.qname { flex: 1; font-size: 11px; color: #8090a0; line-height: 1.4; }
+.qrow.done .qname { text-decoration: line-through; color: var(--text3); }
+
+.qwhy { font-size: 9px; color: var(--text3); margin-top: 2px; opacity: 0.7; }
+
+.qtags { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+.tag { font-size: 9px; padding: 1px 5px; border-radius: 3px; }
+.te { background: var(--easy); color: var(--easy-t); }
+.tm { background: var(--med); color: var(--med-t); }
+.th { background: var(--hard); color: var(--hard-t); }
+.vtag-q { font-size: 9px; padding: 1px 5px; border-radius: 3px; background: #0d1520; color: var(--text3); border: 1px solid var(--border); }
+
+/* FILTER BAR */
+.filter-bar { display: flex; gap: 6px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+.filter-btn { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 3px 9px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--text3); cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; }
+.filter-btn:hover { border-color: var(--border2); color: var(--text2); }
+.filter-btn.on { background: var(--border); color: var(--text2); border-color: var(--border2); }
+.filter-label { font-size: 9px; color: var(--text3); opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">DSA <span>//</span> Pattern Tracker</div>
+    <div class="tagline">pattern-first · variant-complete · notes-ready</div>
+  </div>
+
+  <div class="progress-block">
+    <div class="progress-row">
+      <span class="progress-label">overall progress</span>
+      <span class="progress-count" id="st">0 / 0</span>
+    </div>
+    <div class="pbar-outer"><div class="pbar-inner" id="pb" style="width:0%"></div></div>
+  </div>
+
+  <div class="tab-section">
+    <div class="tab-label">core patterns</div>
+    <div class="tabs" id="tabs-core"></div>
+    <div class="divider">advanced / cp only</div>
+    <div class="tabs" id="tabs-bonus"></div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">show:</span>
+    <button class="filter-btn on" onclick="setFilter('all')">all</button>
+    <button class="filter-btn" onclick="setFilter('e')">easy</button>
+    <button class="filter-btn" onclick="setFilter('m')">med</button>
+    <button class="filter-btn" onclick="setFilter('h')">hard</button>
+    <button class="filter-btn" onclick="setFilter('todo')">todo</button>
+  </div>
+
+  <div id="main"></div>
+</div>
+
+<script>
+const T = [
+{id:'arrays', label:'Arrays', patterns:[
+  {
+    name:'Two Pointers — Opposite Ends',
+    idea:'left=0, right=n-1, move inward. Trade off two variables against each other.',
+    variants:['sorted array','water/height','palindrome check','sum target'],
+    when:'Sorted array OR reasoning about what moving each end does. Brute force is O(n²) pairs.',
+    rules:[
+      {k:'Move rule', v:'Move the pointer that gives ZERO chance of improvement if kept. Always move the bottleneck.'},
+      {k:'Trade-off', v:'Identify what two things fight each other (width vs height, sum vs target).'},
+      {k:'Trigger', v:'"sorted", "pair", "container", "palindrome", "two numbers that..."'},
+    ],
+    qs:[
+      {q:'Two Sum II — sorted array', d:'e', why:'Classic: sum<target→left++, sum>target→right--'},
+      {q:'3Sum', d:'m', why:'Fix one, two-pointer the rest. Sort first. Skip duplicates.'},
+      {q:'Container with most water', d:'m', why:'Move shorter wall — taller wall staying gives zero gain'},
+      {q:'Trapping rain water', d:'h', why:'water[i]=min(maxL,maxR)-h[i]. Move smaller max side.'},
+      {q:'Sort colors — Dutch flag', d:'m', why:'3 pointers: low/mid/high. mid=0→swap low, mid=2→swap high no mid++'},
+      {q:'Valid palindrome', d:'e', why:'Match from both ends, skip non-alphanumeric'},
+      {q:'Squares of sorted array', d:'e', why:'Largest squares at both ends, fill result from back'},
+    ]
+  },
+  {
+    name:'Two Pointers — Slow + Fast (Same Direction)',
+    idea:'slow marks valid zone, fast explores. Fast always moves, slow moves on condition.',
+    variants:['cycle detection','find middle','remove in-place','nth from end'],
+    when:'"cycle", "middle", "remove duplicates in-place", "nth from end", "no extra space"',
+    rules:[
+      {k:'Slow', v:'Last known good / valid position. Only moves when fast finds something useful.'},
+      {k:'Fast', v:'Always moves. Explores ahead.'},
+      {k:'Gap trick', v:'Move fast N steps ahead first → when fast hits end, slow is at target.'},
+    ],
+    qs:[
+      {q:'Remove duplicates from sorted array', d:'e', why:'slow=last unique. fast scans. copy when nums[fast]!=nums[slow]'},
+      {q:'Move zeroes', d:'e', why:'slow=next non-zero slot. fast scans. swap when non-zero found'},
+      {q:'Remove element in-place', d:'e', why:'slow=write pointer. fast=read pointer. write when not equal to val'},
+      {q:'Find duplicate — Floyd cycle', d:'m', why:'slow+1 fast+2 find meet point, then reset one to start'},
+      {q:'Longest mountain in array', d:'m', why:'expand from each peak with two pointers'},
+    ]
+  },
+  {
+    name:'Sliding Window — Fixed Size',
+    idea:'Window size k is given. Add right, remove left, every window is valid.',
+    variants:['max/min sum','average','contains target','fixed constraint'],
+    when:'"subarray of size k", "window of length k", "exactly k elements"',
+    rules:[
+      {k:'Structure', v:'Build first window, then slide: add nums[i], remove nums[i-k]'},
+      {k:'Update', v:'Update answer every single slide — every window is valid'},
+      {k:'Use if not while', v:'Fixed size — exactly one enters, one leaves. No need to loop shrink.'},
+    ],
+    qs:[
+      {q:'Max sum subarray of size K', d:'e', why:'Pure fixed window. Add right, remove left, track max.'},
+      {q:'Max subarray of size K with all distinct', d:'m', why:'Fixed size + constraint → use map, check map.size()==k'},
+      {q:'First negative in every window of K', d:'m', why:'Track negatives in deque or count as window slides'},
+      {q:'Count anagrams of pattern in string', d:'m', why:'Fixed window=pattern.size(). freq map comparison.'},
+    ]
+  },
+  {
+    name:'Sliding Window — Variable Size',
+    idea:'Find longest/shortest window satisfying a condition. Expand right always, shrink left on violation.',
+    variants:['longest valid','shortest valid','at most K','exactly K = atMost(K)-atMost(K-1)'],
+    when:'"longest", "shortest", "minimum length", "maximum length subarray/substring"',
+    rules:[
+      {k:'Template', v:'expand right → if violated: while(violated){shrink left} → update answer after while'},
+      {k:'Violation', v:'Define exactly what breaks the window. That is your while condition.'},
+      {k:'Exactly K trick', v:'exactlyK(arr,K) = atMostK(arr,K) - atMostK(arr,K-1)'},
+      {k:'Update timing', v:'Update answer AFTER shrinking. Never inside the shrink loop.'},
+    ],
+    qs:[
+      {q:'Longest substring without repeating chars', d:'m', why:'violation: freq[s[right]]>1. shrink until gone.'},
+      {q:'Longest substring with at most K distinct', d:'m', why:'violation: map.size()>k. shrink until <=k.'},
+      {q:'Fruit into baskets', d:'m', why:'Same as at most 2 distinct. map.size()>2 → shrink.'},
+      {q:'Minimum window substring', d:'h', why:'FLIPPED: shrink when VALID (cnt==0). Minimize valid window.'},
+      {q:'Longest subarray with sum ≤ K', d:'m', why:'violation: sum>k. shrink left until sum<=k.'},
+      {q:'Longest ones with at most K zeros', d:'m', why:'violation: zeros in window > k. shrink.'},
+      {q:'Subarrays with K different integers', d:'h', why:'exactlyK = atMostK(K) - atMostK(K-1)'},
+    ]
+  },
+  {
+    name:'Prefix Sum',
+    idea:'Build prefix array once in O(n). Then any range sum in O(1). Pair with hashmap for subarray problems.',
+    variants:['range query','subarray sum=K','XOR subarray','2D matrix'],
+    when:'"range sum", "subarray sum equals", "how many subarrays with sum..."',
+    rules:[
+      {k:'Formula', v:'sum(L,R) = prefix[R] - prefix[L-1]'},
+      {k:'HashMap trick', v:'Store prefix sums in map. For sum=K: look for prefix[i]-K in map.'},
+      {k:'XOR variant', v:'Same idea. prefix[i] XOR prefix[j] = XOR of subarray. Find prefix^K in map.'},
+      {k:'2D', v:'prefix[i][j] = prefix[i-1][j] + prefix[i][j-1] - prefix[i-1][j-1] + grid[i][j]'},
+    ],
+    qs:[
+      {q:'Range sum query — immutable', d:'e', why:'Direct prefix application. Build once, query many.'},
+      {q:'Subarray sum equals K', d:'m', why:'HashMap: count of prefix sums. Look for prefix-K.'},
+      {q:'Product of array except self', d:'m', why:'Prefix product from left × suffix product from right'},
+      {q:'Count subarrays with given XOR', d:'m', why:'XOR prefix + map. Count prefix^K occurrences.'},
+      {q:'2D matrix range sum', d:'m', why:'2D prefix formula. Inclusion-exclusion for rectangle query.'},
+      {q:'Subarray sum divisible by K', d:'m', why:'Store prefix%K in map. Same remainder = divisible subarray.'},
+      {q:'Longest subarray with equal 0s and 1s', d:'m', why:'Replace 0→-1. Find longest subarray with sum=0. Prefix+map.'},
+    ]
+  },
+  {
+    name:"Kadane / Carry-Forward",
+    idea:'Rolling value that resets when it becomes a liability. At each step: extend or restart.',
+    variants:['max subarray','min subarray','max product','circular','stocks'],
+    when:'"maximum subarray", "contiguous", "at least one element", "buy sell stock"',
+    rules:[
+      {k:'Core', v:'curr = max(nums[i], curr + nums[i]). If extending hurts, restart.'},
+      {k:'Reset condition', v:'curr + nums[i] < nums[i] means curr is negative drag. Drop it.'},
+      {k:'Product variant', v:'Track both max and min (negative×negative=positive). Swap on negative number.'},
+      {k:'Circular', v:'max(normal Kadane, total_sum - min_subarray_kadane). Edge: all negative.'},
+    ],
+    qs:[
+      {q:"Maximum subarray — Kadane's", d:'e', why:'curr=max(n[i], curr+n[i]). ans=max(ans,curr)'},
+      {q:'Best time to buy and sell stock I', d:'e', why:'Track min so far. profit=price-minSoFar.'},
+      {q:'Maximum product subarray', d:'m', why:'Track maxP and minP. Swap on negative element.'},
+      {q:'Circular subarray maximum', d:'m', why:'max(kadane, total - min_kadane). Handle all-negative.'},
+      {q:'Best time stocks II — multiple transactions', d:'m', why:'Carry forward: add every upward slope greedily.'},
+    ]
+  },
+  {
+    name:'In-place Rearrangement',
+    idea:'Rotate/rearrange using index math, swaps, or cyclic sort. No extra array needed.',
+    variants:['rotate matrix','cyclic sort','next permutation','set zeroes'],
+    when:'"in-place", "O(1) space", "rotate", "missing/duplicate in range [1,n]"',
+    rules:[
+      {k:'Rotate matrix', v:'Transpose (swap i,j and j,i) then reverse each row. Two steps.'},
+      {k:'Cyclic sort', v:'Each num[i] belongs at index num[i]-1. Keep swapping until placed.'},
+      {k:'Next permutation', v:'Find rightmost dip, find smallest larger to its right, swap, reverse suffix.'},
+    ],
+    qs:[
+      {q:'Rotate matrix 90°', d:'m', why:'Transpose then reverse rows. Two-step in-place.'},
+      {q:'Next permutation', d:'m', why:'Find break from right, swap with smallest larger, reverse suffix.'},
+      {q:'Set matrix zeroes', d:'m', why:'Use first row/col as markers. Two-pass approach.'},
+      {q:'Find the duplicate — cyclic sort', d:'m', why:'Place each num at its index. Duplicate = cant place.'},
+      {q:'Missing number — XOR / cyclic sort', d:'e', why:'XOR all indices and values. Missing cancels out.'},
+      {q:'Find all missing numbers in array', d:'m', why:'Cyclic sort then scan for nums[i]!=i+1.'},
+    ]
+  },
+]},
+
+{id:'binsearch', label:'Binary Search', patterns:[
+  {
+    name:'Classic — Sorted Array',
+    idea:'Halve the search space each step. Always ask: does mid satisfy, or do I go left or right?',
+    variants:['exact match','first occurrence','last occurrence','insert position'],
+    when:'Array is sorted. Looking for a specific value or boundary.',
+    rules:[
+      {k:'Template', v:'lo=0,hi=n-1. while(lo<=hi): mid=(lo+hi)/2. adjust lo/hi based on comparison.'},
+      {k:'Boundary search', v:'For first: when found, keep going left (hi=mid-1). For last: keep going right (lo=mid+1).'},
+      {k:'lo<hi vs lo<=hi', v:'lo<=hi for exact match. lo<hi for boundary (converge to single answer).'},
+    ],
+    qs:[
+      {q:'Binary search classic', d:'e', why:'Template problem. Exact match.'},
+      {q:'Search insert position', d:'e', why:'Return lo when not found — lo = correct insert spot.'},
+      {q:'First and last position of element', d:'m', why:'Two binary searches: leftmost and rightmost.'},
+      {q:'Search in 2D matrix', d:'m', why:'Treat as 1D sorted array. mid → row=mid/cols, col=mid%cols.'},
+      {q:'Count occurrences of a number', d:'e', why:'lastPos - firstPos + 1 using two BS calls.'},
+      {q:'Floor and ceil in sorted array', d:'e', why:'Floor=largest ≤ target. Ceil=smallest ≥ target. Track during BS.'},
+    ]
+  },
+  {
+    name:'Rotated / Modified Array',
+    idea:'One half is always sorted. Check which half is sorted, then decide where target lies.',
+    variants:['rotated search','find minimum','find peak','single element'],
+    when:'Array was sorted but then rotated. Or has exactly one anomaly.',
+    rules:[
+      {k:'Key insight', v:'In rotated array, one half is always perfectly sorted. Check left half: nums[lo]<=nums[mid].'},
+      {k:'Which half', v:'If sorted half contains target → go there. Else go to other half.'},
+      {k:'Find min', v:'Min is at the inflection point. Go toward unsorted half.'},
+      {k:'Peak element', v:'If nums[mid]<nums[mid+1] → peak is to the right. Else to the left.'},
+    ],
+    qs:[
+      {q:'Search in rotated sorted array', d:'m', why:'Check which half sorted, determine if target in that half.'},
+      {q:'Find minimum in rotated array', d:'m', why:'Go toward the unsorted (smaller) half each time.'},
+      {q:'Find peak element', d:'m', why:'Binary search on slope direction.'},
+      {q:'Single element in sorted array', d:'m', why:'Pairs break at single element. Check even index parity.'},
+      {q:'Search in rotated array with duplicates', d:'m', why:'Same but handle nums[lo]==nums[mid] edge: lo++.'},
+    ]
+  },
+  {
+    name:'Binary Search on Answer',
+    idea:"Don't search an array — BS the range of valid answers. Key question: is X feasible?",
+    variants:['minimize max','maximize min','find threshold','split array'],
+    when:'"minimum possible maximum", "maximum possible minimum", "feasibility check" on a value range.',
+    rules:[
+      {k:'Setup', v:'lo=min_possible_answer, hi=max_possible_answer.'},
+      {k:'Check function', v:'Write canDo(x): can we achieve this answer? This is the entire problem.'},
+      {k:'Direction', v:'Minimize max → if feasible go left (hi=mid). Maximize min → if feasible go right (lo=mid).'},
+      {k:'Trigger', v:'"at most", "at least", "minimum number of", "divide into K parts"'},
+    ],
+    qs:[
+      {q:'Koko eating bananas', d:'m', why:'BS on speed. canEat(speed): sum(ceil(piles[i]/speed)) <= h.'},
+      {q:'Capacity to ship in D days', d:'m', why:'BS on capacity. canShip(cap): simulate days needed.'},
+      {q:'Aggressive cows / allocate min pages', d:'m', why:'BS on min distance/pages. canPlace(dist) check.'},
+      {q:'Split array — minimize largest sum', d:'h', why:'BS on answer. canSplit(maxSum,k) check.'},
+      {q:'Minimize max distance — gas stations', d:'h', why:'BS on distance. Count stations needed.'},
+      {q:'Nth root of a number', d:'m', why:'BS on answer range. Check mid^n == target.'},
+    ]
+  },
+  {
+    name:'BS on Two Arrays / Lower-Upper Bound',
+    idea:'Partition both arrays simultaneously. Or find boundaries (first/last valid position).',
+    variants:['median two arrays','kth element','lower bound','upper bound'],
+    when:'Two sorted arrays. Or finding exact boundary position in sorted data.',
+    rules:[
+      {k:'Lower bound', v:'First position where nums[i] >= target. Left-biased BS.'},
+      {k:'Upper bound', v:'First position where nums[i] > target. Right-biased BS.'},
+      {k:'Median two arrays', v:'Partition both. Left of partition ≤ right of partition on both arrays.'},
+    ],
+    qs:[
+      {q:'Median of two sorted arrays', d:'h', why:'Binary search partition on smaller array.'},
+      {q:'Kth element of two sorted arrays', d:'m', why:'Generalization of median. Eliminate k/2 elements each step.'},
+      {q:'Smallest letter greater than target', d:'e', why:'Upper bound on circular sorted array.'},
+      {q:'H-index', d:'m', why:'Binary search on answer h. Count papers with citations >= h.'},
+    ]
+  },
+]},
+
+{id:'recursion', label:'Recursion + BT', patterns:[
+  {
+    name:'Pick / Not Pick — Subsets',
+    idea:'At each element: include it or skip it. 2^n paths. Base case = index out of bounds.',
+    variants:['all subsets','subsets with duplicates','subset sum','count subsets'],
+    when:'"all subsets", "power set", "target sum combinations", "include or exclude"',
+    rules:[
+      {k:'Structure', v:'f(index, current): if index==n → record. else: pick(add element, go next) + skip(go next).'},
+      {k:'Duplicates', v:'Sort first. After not-picking, skip all same elements: while(next==curr) index++.'},
+      {k:'Count only', v:'Return integer instead of recording. dp or pure recursion count.'},
+    ],
+    qs:[
+      {q:'Subsets I', d:'m', why:'Pure pick/not-pick. No duplicates.'},
+      {q:'Subsets II — with duplicates', d:'m', why:'Sort + skip same consecutive elements on not-pick path.'},
+      {q:'Subset sum — all subsets equaling target', d:'m', why:'Pick/not-pick with running sum. Record when sum==target.'},
+      {q:'Count subsets with given sum', d:'m', why:'Return count. Leads into DP naturally.'},
+    ]
+  },
+  {
+    name:'For-loop Recursion — Combinations',
+    idea:'Loop from current index onwards, pick one element, recurse from that position.',
+    variants:['combination sum','no reuse','with reuse','phone letters'],
+    when:'"combinations", "unique sets", "sum to target using elements"',
+    rules:[
+      {k:'Structure', v:'f(start, current): for i=start to n: add[i], recurse(i+1 or i), remove[i].'},
+      {k:'Reuse allowed', v:'Recurse with same i (combination sum I). Reuse same element.'},
+      {k:'No reuse', v:'Recurse with i+1 (combination sum II). Move past current element.'},
+      {k:'Duplicates', v:'Sort first. Skip if i>start && nums[i]==nums[i-1].'},
+    ],
+    qs:[
+      {q:'Combination sum I — reuse allowed', d:'m', why:'Recurse with same i. Element can repeat.'},
+      {q:'Combination sum II — no reuse', d:'m', why:'Recurse with i+1. Skip duplicate at same level.'},
+      {q:'Combination sum III', d:'m', why:'Pick exactly k numbers summing to n. Fixed constraints.'},
+      {q:'Letter combinations of phone number', d:'m', why:'For-loop over chars for each digit.'},
+    ]
+  },
+  {
+    name:'Try All Choices — Permutations',
+    idea:'Swap index with every position ahead, recurse, swap back. Every element used exactly once.',
+    variants:['all permutations','unique permutations','kth permutation'],
+    when:'"all arrangements", "permutations", "ordered sequences"',
+    rules:[
+      {k:'Swap method', v:'swap(arr[i], arr[start]), recurse(start+1), swap back.'},
+      {k:'Visited method', v:'Boolean visited array. Try each unvisited, mark, recurse, unmark.'},
+      {k:'Duplicates', v:'Sort + set at each level. Skip if element already tried at this position.'},
+      {k:'Kth permutation', v:'Math shortcut: use (k-1)/factorial to pick digit at each position.'},
+    ],
+    qs:[
+      {q:'Permutations of an array', d:'m', why:'Swap method or visited array method.'},
+      {q:'Permutations II — duplicates', d:'m', why:'Sort + set to avoid same choice at same level.'},
+      {q:'Kth permutation sequence', d:'m', why:'Math: pick each digit using k/factorial. No recursion needed.'},
+    ]
+  },
+  {
+    name:'Constraint Backtracking',
+    idea:'Place only if valid, recurse, undo placement. Try all. No memoization — pure backtracking.',
+    variants:['N-queens','sudoku','coloring','maze'],
+    when:'"place on board", "fill grid", "color graph", "path in maze"',
+    rules:[
+      {k:'Template', v:'if valid: place → recurse → unplace. If not valid: skip.'},
+      {k:'isValid check', v:'Check all constraints before placing. Be thorough.'},
+      {k:'No memo', v:'State changes with each placement. Cannot memoize. Full backtrack.'},
+    ],
+    qs:[
+      {q:'N-Queens', d:'h', why:'Place queen row by row. Check col, diagonal, anti-diagonal sets.'},
+      {q:'Sudoku solver', d:'h', why:'Fill empty cells. Check row, col, 3x3 box constraint.'},
+      {q:'M-coloring problem', d:'m', why:'Color each node. Check adjacent nodes dont share color.'},
+      {q:'Rat in a maze', d:'m', why:'Move in 4 directions. Mark visited. Backtrack on dead end.'},
+      {q:'Word search in grid', d:'m', why:'DFS from each cell. Mark visited per path. Backtrack.'},
+    ]
+  },
+  {
+    name:'Partition / Split Recursion',
+    idea:'Cut the string/array at every index. Recurse both halves independently.',
+    variants:['palindrome partition','word break','expression operators'],
+    when:'"partition into", "split such that", "all ways to divide"',
+    rules:[
+      {k:'Structure', v:'f(start): for i=start to n: if valid(start,i): recurse(i+1).'},
+      {k:'Validity check', v:'Check if prefix is valid (palindrome, in dict, etc) before recursing.'},
+      {k:'Memo', v:'Can often memoize on start index.'},
+    ],
+    qs:[
+      {q:'Palindrome partitioning', d:'m', why:'Cut at every index. Check if prefix is palindrome. Recurse rest.'},
+      {q:'Word break — all ways', d:'h', why:'Cut at every index. Check if prefix is in dictionary.'},
+      {q:'Expression add operators', d:'h', why:'Insert +,-,* between digits. Track value and last multiplied.'},
+    ]
+  },
+]},
+
+{id:'stack', label:'Stack + Queue', patterns:[
+  {
+    name:'Monotonic Stack — Next Greater/Smaller',
+    idea:'Stack stays monotonically increasing or decreasing. Pop when current element breaks order — popped element just found its answer.',
+    variants:['next greater','previous smaller','next smaller','span/distance'],
+    when:'"next greater element", "previous smaller", "span", "how far until smaller"',
+    rules:[
+      {k:'NGE (next greater)', v:'Stack decreasing. When nums[i] > stack top → top found its NGE = nums[i]. Pop+answer.'},
+      {k:'PSE (prev smaller)', v:'Stack increasing. When nums[i] >= stack top → pop. Stack top after pops = PSE.'},
+      {k:'Circular', v:'Loop twice (i%n) or push all elements once and process once more.'},
+      {k:'Store indices', v:'Almost always store indices in stack, not values. Needed for distance/span.'},
+    ],
+    qs:[
+      {q:'Next greater element I', d:'m', why:'Monotonic decreasing stack. Pop when larger found.'},
+      {q:'Next greater element II — circular', d:'m', why:'Same but loop array twice with i%n.'},
+      {q:'Previous smaller element', d:'m', why:'Monotonic increasing stack. Stack top = previous smaller.'},
+      {q:'Daily temperatures', d:'m', why:'NGE variant. Store indices. Answer = i - stack_top_index.'},
+      {q:'Online stock span', d:'m', why:'Count days since last greater. Stack of (price, span) pairs.'},
+      {q:'Sum of subarray minimums', d:'m', why:'For each element as min, find left/right boundaries using PSE/NSE.'},
+    ]
+  },
+  {
+    name:'Monotonic Stack — Histogram / Area',
+    idea:'For each bar, find left and right boundaries where this bar is the minimum. Width × height = area.',
+    variants:['largest rectangle','maximal rectangle','sum of subarray mins'],
+    when:'"largest rectangle", "maximal area in histogram", "binary matrix area"',
+    rules:[
+      {k:'Boundary', v:'Left bound = previous smaller element index. Right bound = next smaller element index.'},
+      {k:'Area formula', v:'height[i] × (right[i] - left[i] - 1) for each bar as the minimum.'},
+      {k:'Matrix', v:'Build histogram row by row. Apply largest rectangle on each row histogram.'},
+    ],
+    qs:[
+      {q:'Largest rectangle in histogram', d:'h', why:'Stack-based. Pop on smaller bar. width=i-stack_top-1.'},
+      {q:'Maximal rectangle in binary matrix', d:'h', why:'Histogram per row. Apply largest rectangle each time.'},
+      {q:'Sum of subarray minimums', d:'m', why:'Each element contributes as min for (L-left)*(right-R) subarrays.'},
+    ]
+  },
+  {
+    name:'Stack — Brackets / Expression',
+    idea:'Push on open bracket. Pop and match on close. Use precedence for operators.',
+    variants:['valid parentheses','evaluate expression','minimum removals'],
+    when:'"valid parentheses", "evaluate", "balanced brackets", "make valid"',
+    rules:[
+      {k:'Basic', v:'Push open. On close: if stack top matches → pop. Else invalid.'},
+      {k:'Minimum removals', v:'Track unmatched counts. Extra opens = unmatched opens at end.'},
+      {k:'Expression', v:'Push numbers. On operator: pop operands, apply, push result. Handle precedence.'},
+    ],
+    qs:[
+      {q:'Valid parentheses', d:'e', why:'Push open. Pop match on close. Empty stack = valid.'},
+      {q:'Minimum remove to make valid', d:'m', why:'Track unmatched open indices. Remove them + extra closes.'},
+      {q:'Evaluate reverse polish notation', d:'m', why:'Push nums. On operator, pop two, compute, push result.'},
+      {q:'Basic calculator II', d:'m', why:'Handle +,-,*,/. Push with sign. Multiply/divide immediately.'},
+    ]
+  },
+  {
+    name:'Sliding Window Maximum — Deque',
+    idea:'Deque stores indices in decreasing value order. Front = window max. Remove stale front.',
+    variants:['window maximum','window minimum','max of minimums'],
+    when:'"maximum in sliding window", "window of size k", "deque optimization"',
+    rules:[
+      {k:'Maintain deque', v:'Remove from back while deque back value < current (for max deque).'},
+      {k:'Remove stale', v:'If front index <= i-k → remove from front (outside window).'},
+      {k:'Answer', v:'Front of deque = index of max in current window.'},
+    ],
+    qs:[
+      {q:'Sliding window maximum', d:'h', why:'Monotonic decreasing deque. Front = max. Remove stale indices.'},
+      {q:'First negative in every window of K', d:'m', why:'Deque of negative indices. Check front validity.'},
+      {q:'Maximum of minimums for every window size', d:'h', why:'For each size, find min using stack boundaries.'},
+    ]
+  },
+  {
+    name:'Stack Design / Simulation',
+    idea:'Support special operations (getMin, getMax) in O(1) by piggybacking auxiliary state.',
+    variants:['min stack','queue from stacks','celebrity','LRU'],
+    when:'"O(1) min/max", "implement queue using stack", "design data structure"',
+    rules:[
+      {k:'Min stack', v:'Auxiliary stack tracking running minimum. Push current min alongside each element.'},
+      {k:'Queue from stacks', v:'Two stacks: inbox and outbox. Pour inbox to outbox when outbox empty.'},
+      {k:'Celebrity', v:'Eliminate non-celebrities: if A knows B, A is not celebrity. Two-pointer on candidates.'},
+    ],
+    qs:[
+      {q:'Min stack', d:'m', why:'Auxiliary stack. Each push records current minimum.'},
+      {q:'Implement queue using two stacks', d:'e', why:'Inbox and outbox. Lazy pour.'},
+      {q:'Celebrity problem', d:'m', why:'Eliminate with two pointers. Verify remaining candidate.'},
+      {q:'Max stack', d:'m', why:'Similar to min stack but track maximum.'},
+    ]
+  },
+]},
+
+{id:'trees', label:'Trees', patterns:[
+  {
+    name:'DFS Traversals',
+    idea:'Pre/In/Post order. Iterative uses explicit stack. Morris uses threaded links for O(1) space.',
+    variants:['recursive','iterative stack','Morris O(1) space'],
+    when:'Visit every node. Order matters for reconstruction or processing.',
+    rules:[
+      {k:'Pre', v:'Root → Left → Right. Useful for cloning, serializing.'},
+      {k:'In', v:'Left → Root → Right. BST inorder = sorted. Most common.'},
+      {k:'Post', v:'Left → Right → Root. Useful for deletion, height.'},
+      {k:'Iterative in', v:'Push all left, pop, visit, go right.'},
+    ],
+    qs:[
+      {q:'Inorder traversal — iterative', d:'e', why:'Stack. Push all lefts, pop, visit, go right.'},
+      {q:'Preorder traversal — iterative', d:'e', why:'Stack. Visit, push right then left.'},
+      {q:'Postorder traversal — iterative', d:'m', why:'Two stack trick or reverse of pre(root,right,left).'},
+      {q:'Morris inorder traversal', d:'h', why:'Thread rightmost of left subtree to current. O(1) space.'},
+    ]
+  },
+  {
+    name:'BFS / Level Order',
+    idea:'Queue-based. Process level by level. All view problems are BFS variants.',
+    variants:['level order','right view','left view','vertical order','zigzag'],
+    when:'"level by level", "right/left view", "vertical", "bottom view", "shortest path in tree"',
+    rules:[
+      {k:'Template', v:'Queue with root. Each level: pop all current, push their children.'},
+      {k:'Right view', v:'Last node at each level.'},
+      {k:'Vertical', v:'Track column offset. Map column → nodes. Sort by col then by level.'},
+      {k:'Zigzag', v:'Alternate direction each level. Use deque or flip vector.'},
+    ],
+    qs:[
+      {q:'Level order traversal', d:'m', why:'BFS template. Group by level.'},
+      {q:'Right side view', d:'m', why:'Last node at each BFS level.'},
+      {q:'Bottom view of tree', d:'m', why:'Rightmost node at each column (last seen wins).'},
+      {q:'Vertical order traversal', d:'m', why:'Track (col, row). Sort by col, row, val.'},
+      {q:'Zigzag level order', d:'m', why:'Flip direction each level. Use flag.'},
+    ]
+  },
+  {
+    name:'Tree DP — Height / Diameter / Balance',
+    idea:'At each node, compute something using left and right subtree returns. Answer can update at every node.',
+    variants:['height','diameter','max path sum','check balance','count good nodes'],
+    when:'Need info from both children at each node. Answer involves combining left+right.',
+    rules:[
+      {k:'Pattern', v:'f(node) returns something upward. Updates global answer as side effect.'},
+      {k:'Diameter', v:'At each node: path through node = leftH + rightH. Update global max.'},
+      {k:'Max path sum', v:'At each node: gain = max(0, left) + max(0, right) + val. Update global.'},
+      {k:'Balance', v:'Return -1 if subtree unbalanced. Else return height.'},
+    ],
+    qs:[
+      {q:'Height of binary tree', d:'e', why:'max(left,right) + 1. Classic recursion.'},
+      {q:'Diameter of binary tree', d:'m', why:'At each node: leftH+rightH. Global max.'},
+      {q:'Check if balanced', d:'m', why:'Return height or -1 for unbalanced. Propagate -1 upward.'},
+      {q:'Maximum path sum', d:'h', why:'At each node: gain=max(0,l)+max(0,r)+val. Return val+max(l,r,0).'},
+      {q:'Count good nodes in tree', d:'m', why:'Pass max-so-far down. Good if node >= max.'},
+    ]
+  },
+  {
+    name:'LCA and Ancestor Problems',
+    idea:'Return node if it is p or q. LCA is where both left and right subtrees return non-null.',
+    variants:['LCA binary tree','LCA BST','distance between nodes','kth ancestor'],
+    when:'"lowest common ancestor", "distance between nodes", "kth ancestor"',
+    rules:[
+      {k:'LCA', v:'if node==p or node==q: return node. LCA = node where left AND right both non-null.'},
+      {k:'LCA BST', v:'Use BST property. If both < node: go left. If both > node: go right. Else: node is LCA.'},
+      {k:'Distance', v:'dist(p,q) = dist(root,p) + dist(root,q) - 2*dist(root,LCA).'},
+    ],
+    qs:[
+      {q:'LCA of binary tree', d:'m', why:'Return node if p or q. Combine left+right returns.'},
+      {q:'LCA of BST', d:'m', why:'Use BST property to navigate. No need to check both subtrees.'},
+      {q:'Distance between two nodes', d:'m', why:'Find LCA, then sum distances from LCA to each node.'},
+      {q:'Kth ancestor of a node', d:'m', why:'Go up k times. Binary lifting for O(logn).'},
+    ]
+  },
+  {
+    name:'BST Properties',
+    idea:'Inorder of BST is sorted. Validate, Kth smallest, swapped nodes all exploit this fact.',
+    variants:['validate BST','kth smallest','recover swapped nodes','BST to sorted list'],
+    when:'Problem involves BST and sorted order. Inorder traversal is the key.',
+    rules:[
+      {k:'Validate', v:'Pass (min, max) range. Each node must be strictly within range.'},
+      {k:'Kth smallest', v:'Inorder traversal, count to k.'},
+      {k:'Swapped nodes', v:'Inorder traversal finds two nodes out of order. Swap their values.'},
+    ],
+    qs:[
+      {q:'Validate BST', d:'m', why:'Pass min/max bounds. Left must be < node, right > node.'},
+      {q:'Kth smallest in BST', d:'m', why:'Inorder traversal. Count to k.'},
+      {q:'Recover BST — two swapped nodes', d:'h', why:'Inorder finds violations. First and last bad nodes.'},
+      {q:'Two sum in BST', d:'m', why:'Inorder gives sorted array. Two pointer on that array.'},
+      {q:'Inorder successor in BST', d:'m', why:'Go right if no right child from node found. Else track last left-turn.'},
+    ]
+  },
+  {
+    name:'Tree Construction',
+    idea:'Inorder + preorder/postorder uniquely determines tree. Hashmap gives O(1) root lookup.',
+    variants:['from preorder+inorder','from postorder+inorder','serialize/deserialize'],
+    when:'"construct tree from traversals", "serialize", "flatten to list"',
+    rules:[
+      {k:'Pre+In', v:'preorder[0] = root. Find in inorder. Left = elements before, right = elements after.'},
+      {k:'Post+In', v:'postorder[-1] = root. Same logic for left/right split.'},
+      {k:'Serialize', v:'BFS or DFS with null markers. Deserialize reconstructs same order.'},
+    ],
+    qs:[
+      {q:'Construct from inorder + preorder', d:'m', why:'Pre[0]=root, find in inorder, split, recurse.'},
+      {q:'Construct from inorder + postorder', d:'m', why:'Post[-1]=root, find in inorder, split, recurse.'},
+      {q:'Serialize and deserialize binary tree', d:'h', why:'BFS with nulls. Or preorder with # for null.'},
+      {q:'Flatten binary tree to linked list', d:'m', why:'Preorder using Morris-like threading.'},
+    ]
+  },
+]},
+
+{id:'graphs', label:'Graphs', patterns:[
+  {
+    name:'BFS / DFS — Traversal + Components',
+    idea:'Visit all reachable from each unvisited node. Number of starts = number of components.',
+    variants:['connected components','islands','flood fill','clone graph'],
+    when:'"number of islands", "connected components", "regions", "spread from source"',
+    rules:[
+      {k:'Template', v:'For each unvisited node: start BFS/DFS from it. Count starts = component count.'},
+      {k:'Grid', v:'4 or 8 direction neighbors. Check bounds + not visited.'},
+      {k:'Clone', v:'HashMap old→new. BFS/DFS and clone each node.'},
+    ],
+    qs:[
+      {q:'Number of provinces', d:'m', why:'Adjacency matrix graph. BFS/DFS count components.'},
+      {q:'Number of islands', d:'m', why:'Grid BFS/DFS. Mark visited by sinking (set to 0).'},
+      {q:'Flood fill', d:'e', why:'Grid DFS. Change color of connected region.'},
+      {q:'Surrounded regions', d:'m', why:'BFS from border Os. Mark safe. Flip remaining Os.'},
+      {q:'Clone a graph', d:'m', why:'HashMap for cloned nodes. BFS to copy edges.'},
+    ]
+  },
+  {
+    name:'Multi-Source BFS',
+    idea:'Push all sources at level 0. BFS gives shortest distance from nearest source simultaneously.',
+    variants:['rotten oranges','nearest 0','word ladder','bipartite check'],
+    when:'"nearest source", "minimum time to reach all", "distance from nearest X"',
+    rules:[
+      {k:'Setup', v:'Push ALL sources into queue at start with distance 0. Normal BFS from there.'},
+      {k:'Why', v:'Single-source BFS would need to run from each source. Multi-source does it in one pass.'},
+      {k:'Bipartite', v:'2-color BFS. If neighbor same color = not bipartite.'},
+    ],
+    qs:[
+      {q:'Rotten oranges', d:'m', why:'Push all rotten at level 0. BFS spreads rot. Count time.'},
+      {q:'01 Matrix — distance from nearest 0', d:'m', why:'Push all 0s at start. BFS gives distances.'},
+      {q:'Word ladder', d:'h', why:'BFS on word graph. Each word = node. Change one letter = edge.'},
+      {q:'Bipartite check — 2-coloring', d:'m', why:'BFS color alternately. Same color neighbors = not bipartite.'},
+    ]
+  },
+  {
+    name:'Cycle Detection',
+    idea:'Undirected: track parent in BFS/DFS. Directed: track recursion stack (3-color DFS).',
+    variants:['undirected BFS','undirected DFS','directed DFS','safe states'],
+    when:'"detect cycle", "can you finish all courses", "dependency loop"',
+    rules:[
+      {k:'Undirected', v:'BFS: neighbor already visited AND not parent = cycle. DFS same.'},
+      {k:'Directed', v:'3 colors: white(0)=unvisited, gray(1)=in-stack, black(2)=done. Gray neighbor = cycle.'},
+      {k:'Safe states', v:'Node is safe if it eventually reaches a terminal (no cycle). DFS + reverse.'},
+    ],
+    qs:[
+      {q:'Detect cycle — undirected BFS', d:'m', why:'Track parent. Visited + not parent = cycle.'},
+      {q:'Detect cycle — directed DFS', d:'m', why:'recStack array. True while in current DFS path.'},
+      {q:'Eventual safe states', d:'m', why:'Safe = no cycle reachable. DFS + color or reverse graph topo.'},
+      {q:'Course schedule I', d:'m', why:'Directed cycle = impossible. Topo sort or cycle detect.'},
+    ]
+  },
+  {
+    name:'Topological Sort',
+    idea:"DFS: push to result after all children done, reverse. Kahn's: process 0-indegree nodes.",
+    variants:['DFS topo','BFS Kahn','course schedule','alien dictionary'],
+    when:'"ordering of tasks", "prerequisites", "dependency order", "DAG ordering"',
+    rules:[
+      {k:"Kahn's BFS", v:'Compute indegree. Push 0-indegree to queue. Pop, reduce neighbors indegree. 0 → push.'},
+      {k:'DFS', v:'Visit all neighbors, push current to stack after. Reverse stack = topo order.'},
+      {k:'Cycle', v:"If Kahn's processes < n nodes = cycle exists. DFS: cycle via gray node."},
+    ],
+    qs:[
+      {q:"Topological sort — DFS + Kahn's", d:'m', why:'Both approaches. Learn both.'},
+      {q:'Course schedule II', d:'m', why:"Kahn's. Return topo order or empty if cycle."},
+      {q:'Alien dictionary', d:'h', why:'Build graph from adjacent word comparisons. Topo sort.'},
+      {q:'Find order of characters', d:'m', why:'Same as alien dictionary.'},
+    ]
+  },
+  {
+    name:'Shortest Path',
+    idea:'Dijkstra = min-heap, non-negative weights. Bellman-Ford = negative weights. BFS = unweighted.',
+    variants:['Dijkstra','Bellman-Ford','DAG shortest path','modified Dijkstra'],
+    when:'"shortest path", "minimum cost to reach", "minimum time"',
+    rules:[
+      {k:'Dijkstra', v:'Min-heap of (dist, node). Relax neighbors. Skip if already processed.'},
+      {k:'Bellman-Ford', v:'Relax all edges n-1 times. nth relaxation finds negative cycle.'},
+      {k:'BFS', v:'Unweighted graph. BFS gives shortest path directly.'},
+      {k:'0-1 BFS', v:'Deque. Weight 0 → push front. Weight 1 → push back.'},
+    ],
+    qs:[
+      {q:"Dijkstra's algorithm", d:'m', why:'Min-heap. dist[] array. Relax neighbors.'},
+      {q:'Bellman-Ford', d:'m', why:'n-1 passes over all edges. Detect negative cycle on nth pass.'},
+      {q:'Network delay time', d:'m', why:'Dijkstra from source. Return max dist.'},
+      {q:'Cheapest flights within K stops', d:'m', why:'Bellman-Ford limited to K+1 passes.'},
+      {q:'Path with minimum effort', d:'m', why:'Modified Dijkstra. Edge weight = abs(height diff).'},
+      {q:'Number of ways to arrive at destination', d:'m', why:'Dijkstra + count paths of same minimum distance.'},
+    ]
+  },
+  {
+    name:'Disjoint Set Union (DSU)',
+    idea:'Union-Find with path compression + rank. Dynamic connectivity. Kruskal MST.',
+    variants:['connected components','redundant connection','accounts merge','Kruskal MST'],
+    when:'"dynamically connect", "group elements", "minimum spanning tree", "merge accounts"',
+    rules:[
+      {k:'Find', v:'Path compression: parent[x] = find(parent[x]). Flattens tree.'},
+      {k:'Union', v:'By rank. Attach smaller tree under larger. Keeps tree flat.'},
+      {k:'MST', v:'Sort edges by weight. Add edge if endpoints in different components.'},
+    ],
+    qs:[
+      {q:'Number of connected components — DSU', d:'m', why:'Union all edges. Count distinct roots.'},
+      {q:'Redundant connection', d:'m', why:'Add edges. First edge where both endpoints same root = redundant.'},
+      {q:'Accounts merge', d:'m', why:'Union emails with same account. Group by root.'},
+      {q:"Kruskal's MST", d:'m', why:'Sort edges. Add if connects two components. Stop at n-1 edges.'},
+    ]
+  },
+]},
+
+{id:'dp', label:'DP', patterns:[
+  {
+    name:'1D DP — Linear',
+    idea:'dp[i] depends on a fixed number of previous states. Usually dp[i-1] or dp[i-1]+dp[i-2].',
+    variants:['fibonacci','climbing stairs','house robber','decode ways'],
+    when:'"how many ways", "minimum cost to reach", "can you reach end"',
+    rules:[
+      {k:'Define state', v:'dp[i] = answer for first i elements.'},
+      {k:'Transition', v:'Write recurrence. dp[i] = f(dp[i-1], dp[i-2], ...).'},
+      {k:'Space optimize', v:'If dp[i] only needs last 2 states → use two variables.'},
+    ],
+    qs:[
+      {q:'Climbing stairs', d:'e', why:'dp[i]=dp[i-1]+dp[i-2]. Fibonacci variant.'},
+      {q:'House robber I', d:'m', why:'dp[i]=max(dp[i-1], dp[i-2]+nums[i]). Skip or take.'},
+      {q:'House robber II — circular', d:'m', why:'Run robber I twice: [0,n-2] and [1,n-1]. Take max.'},
+      {q:'Decode ways', d:'m', why:'dp[i] = ways to decode s[0..i]. Check 1-digit and 2-digit.'},
+      {q:'Jump game I', d:'m', why:'Track maxReach greedily. Or DP can reach[i].'},
+      {q:'Min cost climbing stairs', d:'e', why:'dp[i]=cost[i]+min(dp[i-1],dp[i-2]).'},
+    ]
+  },
+  {
+    name:'2D DP — Grid / Matrix',
+    idea:'dp[i][j] depends on dp[i-1][j] and/or dp[i][j-1]. Fill row by row.',
+    variants:['unique paths','min path sum','obstacles','dungeon game'],
+    when:'"grid", "from top-left to bottom-right", "minimum path", "number of paths"',
+    rules:[
+      {k:'Direction', v:'Usually can only go right or down. dp[i][j] = dp[i-1][j] + dp[i][j-1].'},
+      {k:'Obstacles', v:'dp[i][j]=0 if obstacle. Else normal transition.'},
+      {k:'Space', v:'Can optimize to 1D array since only previous row needed.'},
+    ],
+    qs:[
+      {q:'Unique paths I', d:'m', why:'dp[i][j]=dp[i-1][j]+dp[i][j-1]. Fill grid.'},
+      {q:'Unique paths II — with obstacles', d:'m', why:'Set dp=0 at obstacles. Same recurrence otherwise.'},
+      {q:'Minimum path sum', d:'m', why:'dp[i][j]=grid[i][j]+min(up,left).'},
+      {q:'Minimum falling path sum', d:'m', why:'dp[i][j]=grid[i][j]+min of 3 cells above.'},
+      {q:'Dungeon game', d:'h', why:'Fill from bottom-right. Min health needed at each cell.'},
+    ]
+  },
+  {
+    name:'Knapsack — 0/1',
+    idea:'Each item: take it or leave it. dp[i][w] = best value using first i items with weight limit w.',
+    variants:['0/1 knapsack','subset sum','count subsets','partition equal subset'],
+    when:'"pick items with constraint", "can we partition", "subset summing to target"',
+    rules:[
+      {k:'State', v:'dp[i][w] = max value with i items and w capacity.'},
+      {k:'Transition', v:'Take: dp[i-1][w-wt]+val. Leave: dp[i-1][w]. Take max.'},
+      {k:'1D space', v:'Traverse w from right to left when optimizing to 1D.'},
+      {k:'Variants', v:'Max value→max, count ways→sum, possible→OR boolean.'},
+    ],
+    qs:[
+      {q:'0/1 Knapsack', d:'m', why:'Classic. 2D dp then optimize to 1D.'},
+      {q:'Subset sum — can achieve target?', d:'m', why:'Boolean dp. dp[i][s]=can we make sum s.'},
+      {q:'Count subsets with given sum', d:'m', why:'Count dp. dp[i][s]+=dp[i-1][s-nums[i-1]].'},
+      {q:'Partition equal subset sum', d:'m', why:'Can we make sum/2? Reduces to subset sum.'},
+      {q:'Last stone weight II', d:'m', why:'Minimize difference = partition closest to sum/2.'},
+      {q:'Target sum — assign + or -', d:'m', why:'Count subsets with sum = (target+sum)/2.'},
+    ]
+  },
+  {
+    name:'Knapsack — Unbounded',
+    idea:'Each item can be used unlimited times. Traverse weight from left to right (not right to left).',
+    variants:['coin change','rod cutting','min coins','ways to make change'],
+    when:'"unlimited supply", "any number of times", "coin change"',
+    rules:[
+      {k:'Key diff', v:'Inner loop goes left to right (allows reuse). 0/1 goes right to left.'},
+      {k:'Min coins', v:'dp[i]=1+min(dp[i-coin]) for all coins. Init to infinity.'},
+      {k:'Count ways', v:'dp[i]+=dp[i-coin] for all coins.'},
+    ],
+    qs:[
+      {q:'Coin change — minimum coins', d:'m', why:'Unbounded. dp[i]=1+min(dp[i-c]) each coin.'},
+      {q:'Coin change II — count ways', d:'m', why:'dp[i]+=dp[i-coin]. Order of loops matters.'},
+      {q:'Rod cutting problem', d:'m', why:'Unbounded knapsack on rod lengths.'},
+      {q:'Perfect squares', d:'m', why:'Unbounded. Coins = perfect squares. Min coins.'},
+    ]
+  },
+  {
+    name:'DP on Strings — LCS Family',
+    idea:'dp[i][j] = answer for first i chars of s and first j chars of t. Compare s[i] and t[j].',
+    variants:['LCS','LIS','edit distance','distinct subsequences','palindrome'],
+    when:'"longest common subsequence", "edit distance", "delete/insert operations"',
+    rules:[
+      {k:'Match', v:'If s[i]==t[j]: dp[i][j]=dp[i-1][j-1]+1 (or extend).'},
+      {k:'No match', v:'dp[i][j]=max/min of dp[i-1][j] and dp[i][j-1].'},
+      {k:'LIS', v:'Different: O(n²) dp or O(n logn) with patience sorting + binary search.'},
+    ],
+    qs:[
+      {q:'Longest common subsequence', d:'m', why:'dp[i][j]=if match: dp[i-1][j-1]+1 else max(up,left).'},
+      {q:'Longest increasing subsequence', d:'m', why:'dp[i]=max(dp[j]+1) for j<i with nums[j]<nums[i].'},
+      {q:'Edit distance', d:'m', why:'dp[i][j]=if match:dp[i-1][j-1] else 1+min(replace,insert,delete).'},
+      {q:'Distinct subsequences', d:'h', why:'Count ways s contains t as subseq. Match or skip s[i].'},
+      {q:'Longest palindromic subsequence', d:'m', why:'LCS of s and reverse(s).'},
+      {q:'Minimum insertions to make palindrome', d:'m', why:'n - LPS(s).'},
+      {q:'Short encoding of words', d:'m', why:'Reverse + sort. Each word not suffix of another.'},
+    ]
+  },
+  {
+    name:'Interval DP',
+    idea:'dp[i][j] = answer for subarray/substring from i to j. Try every split point k.',
+    variants:['matrix chain','burst balloons','palindrome partition min cuts','stone merge'],
+    when:'"merge intervals optimally", "minimum cost to split", "burst balloons"',
+    rules:[
+      {k:'Order', v:'Fill by length. Start with length 2, then 3, etc.'},
+      {k:'Split', v:'For k from i to j-1: dp[i][j] = min/max(dp[i][k] + dp[k+1][j] + cost).'},
+      {k:'Trigger', v:'"minimum cost to multiply matrices", "burst balloons", "minimum cuts"'},
+    ],
+    qs:[
+      {q:'Minimum cost to merge stones', d:'h', why:'Interval DP. dp[i][j]=min cost to merge i..j.'},
+      {q:'Burst balloons', d:'h', why:'dp[i][j]=max coins if last balloon in (i,j) is k.'},
+      {q:'Palindrome partitioning II — min cuts', d:'h', why:'dp[i]=min cuts for s[0..i]. Check palindrome.'},
+      {q:'Matrix chain multiplication', d:'m', why:'Classic interval DP. Try all split points.'},
+    ]
+  },
+]},
+
+{id:'greedy', label:'Greedy', patterns:[
+  {
+    name:'Interval Scheduling / Merge',
+    idea:'Sort by end time for max non-overlapping. Sort by start for merging. Greedy pick.',
+    variants:['merge intervals','min removals','meeting rooms','insert interval'],
+    when:'"intervals", "meetings", "overlapping", "non-overlapping"',
+    rules:[
+      {k:'Max non-overlapping', v:'Sort by end. Pick if start >= last end. Greedy always pick earliest-ending.'},
+      {k:'Merge', v:'Sort by start. Merge if next start <= current end. Extend current end.'},
+      {k:'Min rooms', v:'Sort starts and ends separately. Two-pointer simulation.'},
+    ],
+    qs:[
+      {q:'Merge intervals', d:'m', why:'Sort by start. Merge overlapping into one.'},
+      {q:'Non-overlapping intervals', d:'m', why:'Sort by end. Greedily keep. Count removed.'},
+      {q:'Meeting rooms II — min rooms', d:'m', why:'Sort starts+ends. Pointer simulation or min-heap.'},
+      {q:'Insert interval', d:'m', why:'Find overlap range, merge all overlapping, insert.'},
+      {q:'Minimum arrows to burst balloons', d:'m', why:'Sort by end. Arrow at end bursts all overlapping.'},
+    ]
+  },
+  {
+    name:'Greedy — Activity Selection / Jump',
+    idea:'Make locally optimal choice at each step. Prove no swap can improve it.',
+    variants:['jump game','gas station','candy','task scheduler'],
+    when:'Local optimal = global optimal. Usually provable by exchange argument.',
+    rules:[
+      {k:'Jump game', v:'Track maxReach. At each i: maxReach=max(maxReach, i+nums[i]). Unreachable if i>maxReach.'},
+      {k:'Gas station', v:'If total gas >= total cost, solution exists. Start at the point after last failure.'},
+      {k:'Candy', v:'Two passes: left→right (increasing), right→left (decreasing). Take max of both.'},
+    ],
+    qs:[
+      {q:'Jump game I — can reach end?', d:'m', why:'Track maxReach. Return maxReach>=n-1.'},
+      {q:'Jump game II — min jumps', d:'m', why:'Track currentEnd, farthest. Jump when reach currentEnd.'},
+      {q:'Gas station', d:'m', why:'Total tank>=0 means solution exists. Track from last failure point.'},
+      {q:'Candy', d:'h', why:'Two pass: neighbors with higher rating get more candy.'},
+      {q:'Task scheduler', d:'m', why:'Most frequent task determines idle time. Formula or simulation.'},
+    ]
+  },
+  {
+    name:'Greedy on Arrays — Sorting Trick',
+    idea:'Sort by a smart key so that local greedy gives global optimum.',
+    variants:['fractional knapsack','job sequencing','largest number','min platforms'],
+    when:'Sorting by a specific criterion makes greedy work.',
+    rules:[
+      {k:'Fractional knapsack', v:'Sort by value/weight ratio. Take fully, then fractionally.'},
+      {k:'Largest number', v:'Custom comparator: a+b > b+a. Sort by this.'},
+      {k:'Job sequencing', v:'Sort by deadline. Use latest available slot. DSU optimization.'},
+    ],
+    qs:[
+      {q:'Fractional knapsack', d:'m', why:'Sort by ratio. Greedy pick.'},
+      {q:'Minimum platforms — trains', d:'m', why:'Sort arrivals and departures. Simulate with pointers.'},
+      {q:'Job sequencing with deadlines', d:'m', why:'Sort by profit. Assign to latest available slot.'},
+      {q:'Largest number from array digits', d:'m', why:'Custom sort: compare a+b vs b+a as strings.'},
+    ]
+  },
+]},
+
+{id:'bits', label:'Bit Tricks', patterns:[
+  {
+    name:'XOR Properties',
+    idea:'x^x=0, x^0=x. XOR cancels pairs. Finds odd-occurring element. Flip bits selectively.',
+    variants:['find single number','find two unique','XOR range'],
+    when:'"appears once", "odd number of times", "find without extra space"',
+    rules:[
+      {k:'Cancel pairs', v:'XOR all elements. Pairs cancel. Remaining = unique element.'},
+      {k:'Two unique', v:'XOR all, find any set bit, use it to split into two groups. XOR each group.'},
+      {k:'Range XOR', v:'XOR(1 to n) has pattern of 4. XOR(L,R) = XOR(1,R) ^ XOR(1,L-1).'},
+    ],
+    qs:[
+      {q:'Single number I', d:'e', why:'XOR all. Pairs cancel. Result = unique.'},
+      {q:'Single number II — appears 3×', d:'m', why:'Count bits mod 3 for each bit position.'},
+      {q:'Find two non-repeating numbers', d:'m', why:'XOR all, find set bit, split into groups.'},
+      {q:'XOR of all numbers L to R', d:'m', why:'Use XOR(1,n) pattern of period 4.'},
+    ]
+  },
+  {
+    name:'Bit Masking',
+    idea:'1<<i to check/set/clear bit i. Enumerate all 2^n subsets via mask 0 to 2^n-1.',
+    variants:['check/set/clear bit','enumerate subsets','power of two'],
+    when:'"subsets via bitmask", "check if bit set", "power of 2"',
+    rules:[
+      {k:'Check bit i', v:'n & (1<<i) != 0'},
+      {k:'Set bit i', v:'n | (1<<i)'},
+      {k:'Clear bit i', v:'n & ~(1<<i)'},
+      {k:'Power of 2', v:'n>0 && (n & n-1)==0. Power of 2 has exactly one bit set.'},
+      {k:'Enumerate subsets', v:'for mask=0 to (1<<n)-1: for i=0 to n-1: if mask&(1<<i) → element i in subset.'},
+    ],
+    qs:[
+      {q:'Count set bits', d:'e', why:'Brian Kernighan: n&=n-1 removes lowest set bit. Count iterations.'},
+      {q:'Power of two check', d:'e', why:'n>0 && (n&n-1)==0.'},
+      {q:'Reverse bits', d:'e', why:'Extract LSB, shift into result from MSB side. 32 times.'},
+      {q:'Subsets using bitmask', d:'m', why:'For each mask 0 to 2^n-1, extract elements where bit set.'},
+    ]
+  },
+  {
+    name:'Bit Tricks on Arithmetic',
+    idea:'Shifts replace multiply/divide by 2. &1 checks odd. Useful for space-constrained problems.',
+    variants:['divide without /','add without +','check odd/even'],
+    when:'"without arithmetic operators", "bit level operations"',
+    rules:[
+      {k:'Multiply by 2', v:'n << 1'},
+      {k:'Divide by 2', v:'n >> 1'},
+      {k:'Check odd', v:'n & 1 == 1'},
+      {k:'Add without +', v:'While carry: sum=a^b, carry=(a&b)<<1, a=sum, b=carry.'},
+    ],
+    qs:[
+      {q:'Divide two integers without / operator', d:'m', why:'Bit shift to find largest multiple. Subtract repeatedly.'},
+      {q:'Add without + operator', d:'m', why:'XOR for sum, AND+shift for carry. Repeat until no carry.'},
+      {q:'Missing number — XOR approach', d:'e', why:'XOR indices 0..n with all nums. Missing cancels out.'},
+    ]
+  },
+]},
+
+{id:'ll', label:'Linked List', patterns:[
+  {
+    name:'Fast and Slow Pointers',
+    idea:'Slow +1, fast +2. They meet at cycle. Slow stops at middle when fast hits end.',
+    variants:['find middle','detect cycle','find cycle start','palindrome check'],
+    when:'"cycle", "middle of list", "nth from end", "palindrome linked list"',
+    rules:[
+      {k:'Middle', v:'Fast hits end → slow is at middle. Even length: slow at first mid or second mid based on init.'},
+      {k:'Cycle detect', v:'If fast==slow → cycle exists.'},
+      {k:'Cycle start', v:'After meeting: reset one to head. Move both +1. They meet at cycle start.'},
+      {k:'Palindrome', v:'Find middle, reverse second half, compare.'},
+    ],
+    qs:[
+      {q:'Middle of linked list', d:'e', why:'Fast 2x, slow 1x. Slow = middle when fast ends.'},
+      {q:"Detect cycle — Floyd's", d:'m', why:'Fast and slow. Meet = cycle exists.'},
+      {q:'Find start of cycle', d:'m', why:'After meeting: reset one to head, both +1. Meet = start.'},
+      {q:'Palindrome linked list', d:'m', why:'Find mid, reverse second half, compare both halves.'},
+      {q:'Happy number', d:'e', why:'Fast/slow on digit-square-sum sequence. Cycle = not happy.'},
+    ]
+  },
+  {
+    name:'Linked List Reversal',
+    idea:'Track prev, curr, next. Relink curr→prev, advance both. Iterative or recursive.',
+    variants:['full reverse','reverse in K groups','reverse between L and R'],
+    when:'"reverse", "reorder", "flip direction"',
+    rules:[
+      {k:'Template', v:'prev=null, curr=head. While curr: next=curr.next, curr.next=prev, prev=curr, curr=next.'},
+      {k:'K groups', v:'Reverse K nodes at a time. Connect tail of each group to head of next.'},
+      {k:'Between L and R', v:'Find node before L. Reverse L to R. Connect back.'},
+    ],
+    qs:[
+      {q:'Reverse linked list', d:'e', why:'Three pointer: prev, curr, next.'},
+      {q:'Reverse in K-groups', d:'h', why:'Reverse K, connect to next group recursively.'},
+      {q:'Reverse between L and R', d:'m', why:'Find node before L, reverse L..R, reconnect.'},
+      {q:'Swap nodes in pairs', d:'m', why:'K=2 reverse groups. Or direct swap of adjacent.'},
+    ]
+  },
+  {
+    name:'Merge / Two Pointers on Lists',
+    idea:'Merge sorted halves. Equalize lengths to find intersection. Use dummy head to simplify.',
+    variants:['merge two sorted','merge K sorted','sort list','find intersection'],
+    when:'"merge", "sort linked list", "intersection point"',
+    rules:[
+      {k:'Dummy head', v:'Create dummy node before result. Simplifies edge cases at head.'},
+      {k:'Merge K', v:'Use min-heap of (value, node). Always extract smallest.'},
+      {k:'Intersection', v:'Two pointers. When one hits end, restart on other list. They meet at intersection.'},
+    ],
+    qs:[
+      {q:'Merge two sorted lists', d:'e', why:'Dummy head. Compare and link smaller each time.'},
+      {q:'Merge K sorted lists — heap', d:'h', why:'Min heap of (val, node). Extract min, push next.'},
+      {q:'Sort linked list', d:'m', why:'Merge sort. Find mid, split, sort halves, merge.'},
+      {q:'Intersection of two linked lists', d:'m', why:'Switch lists at end. Equalize length naturally.'},
+    ]
+  },
+  {
+    name:'Pointer Manipulation / Deletion',
+    idea:'Maintain prev pointer. Dummy head absorbs edge cases when deleting head node.',
+    variants:['remove nth from end','remove duplicates','reorder list','delete without head'],
+    when:'"remove", "delete", "reorder L0→Ln→L1→Ln-1"',
+    rules:[
+      {k:'Dummy head', v:'Add before head. Deletion of any node (including head) is uniform.'},
+      {k:'Nth from end', v:'Move fast N steps. Then move both. Slow stops at node before target.'},
+      {k:'Reorder', v:'Find mid, reverse second half, merge alternately.'},
+    ],
+    qs:[
+      {q:'Remove nth node from end', d:'m', why:'Fast N ahead. Both move. Slow before target.'},
+      {q:'Remove duplicates from sorted list', d:'e', why:'Skip while next has same value.'},
+      {q:'Reorder list', d:'m', why:'Find mid, reverse second half, interleave.'},
+      {q:'Delete node without head access', d:'m', why:'Copy next node value, delete next node.'},
+    ]
+  },
+]},
+
+{id:'greedy2', label:'Heap', patterns:[
+  {
+    name:'Top K Elements',
+    idea:'Use min-heap of size K to maintain K largest. Or max-heap for K smallest.',
+    variants:['K largest','K smallest','K most frequent','K closest'],
+    when:'"K largest", "K most frequent", "top K", "K closest points"',
+    rules:[
+      {k:'K largest', v:'Min-heap of size K. If new > heap.top(): pop, push new. Result = heap contents.'},
+      {k:'K most frequent', v:'Count frequencies. Min-heap on frequency. Keep K most frequent.'},
+      {k:'K closest', v:'Max-heap on distance. Pop if new closer than top. Keep K closest.'},
+    ],
+    qs:[
+      {q:'Kth largest element in array', d:'m', why:'Min heap size K. Or quickselect O(n) avg.'},
+      {q:'K most frequent elements', d:'m', why:'Freq map + min heap on freq. Or bucket sort.'},
+      {q:'K closest points to origin', d:'m', why:'Max heap on distance. Size K.'},
+      {q:'Find median from data stream', d:'h', why:'Max heap (lower half) + min heap (upper half). Balance sizes.'},
+      {q:'Top K frequent words', d:'m', why:'Freq map + min heap with custom comparator (freq then lex).'},
+    ]
+  },
+  {
+    name:'Merge K Sorted / Running Order',
+    idea:'Always process the globally minimum (or maximum) available element using heap.',
+    variants:['merge K sorted','K pairs sum','IPO maximize capital'],
+    when:'"merge K", "smallest from multiple sources", "always process best available"',
+    rules:[
+      {k:'Setup', v:'Push first element of each source into heap. Pop min, push next from same source.'},
+      {k:'IPO', v:'Use two heaps: available projects (by capital) and profitable projects (by profit).'},
+    ],
+    qs:[
+      {q:'Merge K sorted lists', d:'h', why:'Min heap of (val, node). Always extract min.'},
+      {q:'K pairs with smallest sums', d:'m', why:'Heap of pairs. Push next candidates on pop.'},
+      {q:'IPO — maximize capital', d:'h', why:'Sort by capital. Push affordable projects into max-profit heap.'},
+      {q:'Connect ropes with minimum cost', d:'m', why:'Min heap. Always merge two smallest ropes.'},
+    ]
+  },
+]},
+
+{id:'adv_trees', label:'Adv. Trees', bonus:true, patterns:[
+  {
+    name:'Segment Tree',
+    idea:'Range queries (sum/min/max) and point updates in O(log n). Lazy propagation for range updates.',
+    bonus:true,
+    variants:['range sum','range min/max','point update','range update lazy'],
+    when:'"mutable range queries", "update and query", "range sum with updates"',
+    rules:[
+      {k:'Build', v:'O(n). Leaf nodes = array values. Internal = aggregate of children.'},
+      {k:'Query', v:'O(log n). Split range into O(log n) nodes.'},
+      {k:'Update', v:'O(log n). Update leaf, propagate up.'},
+      {k:'Lazy', v:'Delay updates. Push down when accessing children.'},
+    ],
+    qs:[
+      {q:'Range sum query — mutable', d:'m', why:'Segment tree with point update.'},
+      {q:'Range minimum query', d:'m', why:'Segment tree storing min. Same structure.'},
+      {q:'Count of smaller numbers after self', d:'h', why:'Segment tree or merge sort or BIT.'},
+      {q:'Range update + range query — lazy', d:'h', why:'Lazy propagation segment tree.'},
+    ]
+  },
+  {
+    name:'Fenwick Tree (BIT)',
+    idea:'Simpler than segment tree for prefix sum + point update. O(log n) both. Uses lowbit trick.',
+    bonus:true,
+    variants:['prefix sum update','count inversions','2D BIT'],
+    when:'"prefix sum with updates", "count inversions", "2D range queries"',
+    rules:[
+      {k:'Update', v:'i += i & (-i). Add value up the tree.'},
+      {k:'Query', v:'i -= i & (-i). Sum down the tree.'},
+      {k:'Inversion count', v:'Process right to left. For each element, query how many smaller already inserted.'},
+    ],
+    qs:[
+      {q:'Range sum — BIT', d:'m', why:'Point update, prefix query. Classic BIT.'},
+      {q:'Count inversions in array', d:'m', why:'Merge sort O(n logn) or BIT approach.'},
+      {q:'2D BIT for 2D range sum', d:'h', why:'Nested BIT. Update and query in 2D.'},
+    ]
+  },
+]},
+
+{id:'adv_graphs', label:'Adv. Graphs', bonus:true, patterns:[
+  {
+    name:'Floyd-Warshall',
+    idea:'All-pairs shortest path. Try every intermediate node k. O(n³). Works with negative edges.',
+    bonus:true,
+    variants:['all pairs shortest path','transitive closure','detect negative cycle'],
+    when:'"all pairs", "distance between every pair", "can reach from any to any"',
+    rules:[
+      {k:'Template', v:'For k: for i: for j: dist[i][j]=min(dist[i][j], dist[i][k]+dist[k][j]).'},
+      {k:'Negative cycle', v:'If dist[i][i] < 0 after algorithm = negative cycle.'},
+    ],
+    qs:[
+      {q:'All-pairs shortest path', d:'m', why:'Direct Floyd-Warshall application.'},
+      {q:'Find city with fewest reachable neighbours', d:'m', why:'Floyd-Warshall then count reachable per city.'},
+      {q:'Transitive closure', d:'m', why:'Boolean variant. reach[i][j] |= reach[i][k] & reach[k][j].'},
+    ]
+  },
+  {
+    name:"Tarjan's / Bridges / Articulation Points",
+    idea:'DFS with discovery time + low-link values. Find SCCs, bridges, articulation points.',
+    bonus:true,
+    variants:['SCC Tarjan','Kosaraju SCC','bridges','articulation points'],
+    when:'"strongly connected", "critical connections", "removing which edge disconnects"',
+    rules:[
+      {k:'Low-link', v:'Lowest discovery time reachable from subtree. Bridge: low[v] > disc[u].'},
+      {k:'Kosaraju', v:'DFS order on original, then DFS on reversed graph in reverse finish order.'},
+    ],
+    qs:[
+      {q:'Strongly connected components — Tarjan', d:'h', why:'DFS + stack + low-link values.'},
+      {q:'Find all bridges in graph', d:'h', why:'DFS. Bridge if low[v] > disc[u].'},
+      {q:'Critical connections in network', d:'h', why:'Same as finding bridges.'},
+    ]
+  },
+]},
+];
+
+const SK = 'dsa_v4_complete';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(SK) || '{}'); } catch(e) {}
+let activeTopic = 'arrays';
+let openCards = {};
+let activeFilter = 'all';
+
+function save() { try { localStorage.setItem(SK, JSON.stringify(state)); } catch(e) {} }
+function qkey(tid, pi, qi) { return tid + '__' + pi + '__' + qi; }
+function totalAll() { let t=0; T.forEach(tp=>tp.patterns.forEach(p=>t+=p.qs.length)); return t; }
+function doneAll() { return Object.values(state).filter(Boolean).length; }
+
+function updateGlobal() {
+  const tot = totalAll(), dn = doneAll();
+  document.getElementById('st').textContent = dn + ' / ' + tot + ' done';
+  document.getElementById('pb').style.width = Math.round(dn/tot*100) + '%';
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  event.target.classList.add('on');
+  renderMain();
+}
+
+function renderTabs() {
+  const core = T.filter(t => !t.bonus);
+  const bonus = T.filter(t => t.bonus);
+  document.getElementById('tabs-core').innerHTML = core.map(t =>
+    `<button class="tab${t.id===activeTopic?' on':''}" onclick="setTopic('${t.id}')">${t.label}</button>`
+  ).join('');
+  document.getElementById('tabs-bonus').innerHTML = bonus.map(t =>
+    `<button class="tab bonus${t.id===activeTopic?' on':''}" onclick="setTopic('${t.id}')">${t.label}</button>`
+  ).join('');
+}
+
+function patternDone(tid, pi) {
+  const p = T.find(t=>t.id===tid).patterns[pi];
+  return p.qs.filter((_,qi)=>state[qkey(tid,pi,qi)]).length;
+}
+
+function shouldShow(q, pi, qi) {
+  if (activeFilter === 'all') return true;
+  if (activeFilter === 'todo') return !state[qkey(activeTopic, pi, qi)];
+  return q.d === activeFilter;
+}
+
+function renderMain() {
+  const topic = T.find(t => t.id === activeTopic);
+  const isBonus = !!topic.bonus;
+  document.getElementById('main').innerHTML = topic.patterns.map((p, pi) => {
+    const dn = patternDone(activeTopic, pi), tot = p.qs.length;
+    const isOpen = !!openCards[activeTopic+'__'+pi];
+    const visibleQs = p.qs.filter((q,qi) => shouldShow(q, pi, qi));
+
+    const variantHtml = p.variants ? p.variants.map(v => `<span class="vtag key">${v}</span>`).join('') : '';
+
+    const rulesHtml = p.rules ? p.rules.map(r =>
+      `<div class="note-rule"><b>${r.k}:</b> ${r.v}</div>`
+    ).join('') : '';
+
+    const whenHtml = p.when ? `<div class="note-when"><b>Trigger: </b>${p.when}</div>` : '';
+
+    const qHtml = visibleQs.length === 0 ? `<div style="padding:10px 14px 10px 48px;font-size:10px;color:var(--text3)">No problems match this filter.</div>` :
+      visibleQs.map((q, _) => {
+        const qi = p.qs.indexOf(q);
+        const k = qkey(activeTopic, pi, qi);
+        const done = !!state[k];
+        return `<div class="qrow${done?' done':''}" id="qr_${pi}_${qi}" onclick="toggleQ('${k}',${pi},${qi})">
+          <div class="qcheck"></div>
+          <div class="qname">
+            ${q.q}
+            ${q.why ? `<div class="qwhy">${q.why}</div>` : ''}
+          </div>
+          <div class="qtags">
+            <span class="tag t${q.d}">${q.d==='e'?'easy':q.d==='m'?'med':'hard'}</span>
+          </div>
+        </div>`;
+      }).join('');
+
+    return `<div class="pcard${isBonus?' bonus-card':''}">
+      <div class="pc-head" onclick="toggleCard(${pi})">
+        <div class="ph-num">${String(pi+1).padStart(2,'0')}</div>
+        <div class="ph-body">
+          <div class="ph-name">${p.name}${isBonus?'<span class="bonus-label">CP / advanced</span>':''}</div>
+          <div class="ph-idea">${p.idea}</div>
+          <div class="ph-variants">${variantHtml}</div>
+        </div>
+        <div class="ph-right">
+          <span class="ph-prog">${dn}/${tot}</span>
+          <span class="chev${isOpen?' open':''}">▼</span>
+        </div>
+      </div>
+      <div class="qlist${isOpen?' open':''}" id="ql_${pi}">
+        <div class="pattern-note">
+          <div class="note-head">// pattern rules</div>
+          ${rulesHtml}
+          ${whenHtml}
+        </div>
+        ${qHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(pi) {
+  const key = activeTopic + '__' + pi;
+  openCards[key] = !openCards[key];
+  renderMain();
+}
+
+function toggleQ(k, pid, qid) {
+  state[k] = !state[k];
+  save();
+  const row = document.getElementById('qr_' + pid + '_' + qid);
+  if (row) row.classList.toggle('done', state[k]);
+  const dn = patternDone(activeTopic, pid);
+  const tot = T.find(t=>t.id===activeTopic).patterns[pid].qs.length;
+  const prog = document.getElementById('prog_' + pid);
+  if (prog) prog.textContent = dn + '/' + tot;
+  updateGlobal();
+}
+
+function setTopic(id) {
+  activeTopic = id;
+  renderTabs();
+  renderMain();
+}
+
+renderTabs();
+renderMain();
+updateGlobal();
+</script>
+</body>
+</html>
